@@ -1,0 +1,48 @@
+base-file: data/base.yaml
+target: target.yaml
+sub-links:
+  - url: https://example.com/api/subscribe?token=0000000
+    headers:
+      User-Agent: ClashForWindows<v2.50.0>
+  - url: https://example.com/
+ruleset:
+  - name: ban
+    location: data/ban.list
+  - name: dir
+    location: data/direct.list
+  - name: pro
+    location: data/proxy.list
+  - name: dir
+    value: GEOIP,CN
+  - name: pro
+    value: FINAL
+proxies:
+  - name: node01
+    server: example.com
+    port: 12345
+    type: ss
+    udp: false
+proxy-groups:
+  - name: auto
+    type: url-test
+    url: https://i.ytimg.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+      - "*"
+  - name: pro
+    type: select
+    proxies:
+      - "auto"
+      - "DIRECT"
+      - "*"
+  - name: dir
+    type: select
+    proxies:
+      - "DIRECT"
+      - "auto"
+  - name: ban
+    type: select
+    proxies:
+      - "REJECT"
+      - "DIRECT"

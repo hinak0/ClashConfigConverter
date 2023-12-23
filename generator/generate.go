@@ -69,7 +69,10 @@ func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 				continue
 			}
 
-			rules = append(rules, rule+","+s.Name)
+			ruleParams := strings.Split(rule, ",")
+			ruleParams = append(ruleParams[:2], append([]string{s.Name}, ruleParams[2:]...)...)
+			ruleStr := strings.Join(ruleParams, ",")
+			rules = append(rules, ruleStr)
 		}
 	}
 

@@ -7,11 +7,11 @@ type RawConfig struct {
 	TProxyPort         int      `yaml:"tproxy-port,omitempty"`
 	MixedPort          int      `yaml:"mixed-port,omitempty"`
 	Authentication     []string `yaml:"authentication,omitempty"`
-	AllowLan           bool     `yaml:"allow-lan,omitempty"`
+	AllowLan           bool     `yaml:"allow-lan"`
 	BindAddress        string   `yaml:"bind-address,omitempty"`
-	Mode               any      `yaml:"mode,omitempty"`
-	LogLevel           any      `yaml:"log-level,omitempty"`
-	IPv6               bool     `yaml:"ipv6,omitempty"`
+	Mode               string   `yaml:"mode,omitempty"`
+	LogLevel           string   `yaml:"log-level,omitempty"`
+	IPv6               bool     `yaml:"ipv6"`
 	ExternalController string   `yaml:"external-controller,omitempty"`
 	ExternalUI         string   `yaml:"external-ui,omitempty"`
 	Secret             string   `yaml:"secret,omitempty"`
@@ -31,14 +31,14 @@ type RawConfig struct {
 }
 
 type RawDNS struct {
-	Enable            bool              `yaml:"enable,omitempty"`
-	IPv6              *bool             `yaml:"ipv6,omitempty"`
-	UseHosts          bool              `yaml:"use-hosts,omitempty"`
-	NameServer        []string          `yaml:"nameserver,omitempty"`
+	Enable            bool              `yaml:"enable"`
+	IPv6              *bool             `yaml:"ipv6"`
+	UseHosts          bool              `yaml:"use-hosts"`
+	NameServer        []string          `yaml:"nameserver"`
 	Fallback          []string          `yaml:"fallback,omitempty"`
 	FallbackFilter    any               `yaml:"fallback-filter,omitempty"`
 	Listen            string            `yaml:"listen,omitempty"`
-	EnhancedMode      any               `yaml:"enhanced-mode,omitempty"`
+	EnhancedMode      string            `yaml:"enhanced-mode,omitempty"`
 	FakeIPRange       string            `yaml:"fake-ip-range,omitempty"`
 	FakeIPFilter      []string          `yaml:"fake-ip-filter,omitempty"`
 	DefaultNameserver []string          `yaml:"default-nameserver,omitempty"`

@@ -4,3 +4,6 @@ config.yaml
 target.yaml
 
 go.sum
+
+build.bash
+bin/

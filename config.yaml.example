@@ -15,7 +15,7 @@ ruleset:
   - name: dir
     value: GEOIP,CN
   - name: pro
-    value: FINAL
+    value: MATCH
 proxies:
   - name: node01
     server: example.com

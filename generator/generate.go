@@ -143,5 +143,8 @@ func WriteTarget(path string, content string) {
 	f, _ := os.Create(path)
 	defer f.Close()
 
-	f.Write([]byte(content))
+	_, err := f.Write([]byte(content))
+	if err != nil {
+		log.Errorln("Failed to write target.yaml")
+	}
 }

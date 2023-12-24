@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/hinak0/ClashConfigConverter/log"
 	"github.com/hinak0/ClashConfigConverter/proto"
 	"gopkg.in/yaml.v3"
 )
@@ -35,7 +36,10 @@ func Parse() AppConfig {
 	data, _ := io.ReadAll(file)
 
 	Appconfig := AppConfig{}
-	yaml.Unmarshal(data, &Appconfig)
+	err := yaml.Unmarshal(data, &Appconfig)
+	if err != nil {
+		log.Errorln("Failed to parse config.yaml.")
+	}
 
 	return Appconfig
 }

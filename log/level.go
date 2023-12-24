@@ -3,6 +3,8 @@ package log
 import (
 	"encoding/json"
 	"errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // LogLevelMapping is a mapping for LogLevel enum
@@ -27,7 +29,11 @@ type LogLevel int
 // UnmarshalYAML unserialize LogLevel with yaml
 func (l *LogLevel) UnmarshalYAML(unmarshal func(any) error) error {
 	var tp string
-	unmarshal(&tp)
+	err := unmarshal(&tp)
+	if err != nil {
+		log.Errorln("Log.UnmarshalYAML() Error.")
+	}
+
 	level, exist := LogLevelMapping[tp]
 	if !exist {
 		return errors.New("invalid mode")
@@ -39,7 +45,10 @@ func (l *LogLevel) UnmarshalYAML(unmarshal func(any) error) error {
 // UnmarshalJSON unserialize LogLevel with json
 func (l *LogLevel) UnmarshalJSON(data []byte) error {
 	var tp string
-	json.Unmarshal(data, &tp)
+	err := json.Unmarshal(data, &tp)
+	if err != nil {
+		log.Errorln("Log.UnmarshalJSON() Error.")
+	}
 	level, exist := LogLevelMapping[tp]
 	if !exist {
 		return errors.New("invalid mode")

@@ -8,8 +8,13 @@ import (
 	"strings"
 
 	"github.com/hinak0/ClashConfigConverter/config"
+	"github.com/hinak0/ClashConfigConverter/log"
 	"github.com/hinak0/ClashConfigConverter/proto"
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	proxiesNames []string
 )
 
 func ParseSubscriptions(subscriptions []config.Subscription) (proxies []map[string]interface{}) {
@@ -23,9 +28,14 @@ func ParseSubscriptions(subscriptions []config.Subscription) (proxies []map[stri
 			continue
 		}
 		tmpConfig := proto.RawConfig{}
-		yaml.Unmarshal([]byte(res), &tmpConfig)
+		err = yaml.Unmarshal([]byte(res), &tmpConfig)
+		if err != nil {
+			log.Warnln("Error when parse subscription:%s", res)
+		}
 		proxies = append(proxies, tmpConfig.Proxy...)
 	}
+	proxiesNames = getAllProxyName(proxies)
+	log.Infoln("Parse subscription success: %v", proxiesNames)
 	return proxies
 }
 
@@ -38,6 +48,7 @@ func getSingleSubscription(client *http.Client, sub config.Subscription) (string
 
 	res, err := client.Do(request)
 	if err != nil {
+		log.Warnln("Error when pull subscription %s: %v", sub.URL, err)
 		return "", err
 	}
 	defer res.Body.Close()
@@ -75,7 +86,7 @@ func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 			rules = append(rules, ruleStr)
 		}
 	}
-
+	log.Infoln("Success parse rules.")
 	return rules
 }
 
@@ -88,7 +99,7 @@ func getAllProxyName(proxies []map[string]interface{}) (proxiesNameList []string
 }
 
 func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []map[string]interface{}) (groups []proto.ProxyGroup) {
-	proxiesNames := getAllProxyName(proxies)
+	// proxiesNames := getAllProxyName(proxies)
 	for _, rowGroup := range rowGroups {
 		for index, proxyName := range rowGroup.Proxies {
 			// replase * to all proxies
@@ -99,6 +110,7 @@ func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []map[string]interfac
 		}
 		groups = append(groups, rowGroup)
 	}
+	log.Infoln("Success parse ProxyGroups.")
 	return
 }
 
@@ -108,13 +120,20 @@ func Integrate(c config.AppConfig) {
 	proxyGroups := ParseProxyGroup(c.ProxyGroup, proxies)
 	rules := ParseRuleSet(c.RuleSets)
 
-	baseConfig := proto.RawConfig{Proxy: proxies, ProxyGroup: proxyGroups, Rule: rules}
+	baseConfig := proto.RawConfig{}
 
 	f, _ := os.Open(c.BaseFile)
 	defer f.Close()
 	data, _ := io.ReadAll(f)
 
-	yaml.Unmarshal(data, &baseConfig)
+	err := yaml.Unmarshal(data, &baseConfig)
+	if err != nil {
+		log.Errorln("Failed to parse base config.")
+	}
+
+	baseConfig.Proxy = proxies
+	baseConfig.ProxyGroup = proxyGroups
+	baseConfig.Rule = rules
 
 	result, _ := yaml.Marshal(baseConfig)
 	WriteTarget(c.TargetPath, string(result))

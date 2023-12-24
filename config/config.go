@@ -10,17 +10,19 @@ import (
 )
 
 type AppConfig struct {
-	BaseFile      string                   `yaml:"base-file"`
-	TargetPath    string                   `yaml:"target"`
-	Subscriptions []Subscription           `yaml:"sub-links"`
-	RuleSets      []RuleSet                `yaml:"ruleset"`
-	Proxies       []map[string]interface{} `yaml:"proxies"`
-	ProxyGroup    []proto.ProxyGroup       `yaml:"proxy-groups"`
+	BaseFile      string             `yaml:"base-file"`
+	TargetPath    string             `yaml:"target"`
+	Exclude       string             `yaml:"exclude"`
+	Subscriptions []Subscription     `yaml:"sub-links"`
+	RuleSets      []RuleSet          `yaml:"ruleset"`
+	Proxies       []proto.Proxy      `yaml:"proxies"`
+	ProxyGroup    []proto.ProxyGroup `yaml:"proxy-groups"`
 }
 
 type Subscription struct {
-	URL     string            `yaml:"url"`
-	Headers map[string]string `yaml:"headers"`
+	URL       string            `yaml:"url"`
+	Headers   map[string]string `yaml:"headers"`
+	UdpEnable bool              `yaml:"udp"`
 }
 
 type RuleSet struct {

@@ -3,37 +3,6 @@ socks-port: 0
 redir-port: 0
 tproxy-port: 0
 mixed-port: 0
-authentication: []
 allow-lan: false
-bind-address: ""
-mode: null
-log-level: null
-ipv6: false
-external-controller: ""
-external-ui: ""
-secret: ""
-interface-name: ""
-routing-mark: 0
-tunnels: []
-proxy-providers: {}
-hosts: {}
-inbounds: []
 dns:
     enable: false
-    ipv6: null
-    use-hosts: false
-    nameserver: []
-    fallback: []
-    fallback-filter: null
-    listen: ""
-    enhanced-mode: null
-    fake-ip-range: ""
-    fake-ip-filter: []
-    default-nameserver: []
-    nameserver-policy: {}
-    search-domains: []
-experimental: null
-profile: null
-proxies: []
-proxy-groups: []
-rules: []

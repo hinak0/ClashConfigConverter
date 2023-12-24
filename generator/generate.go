@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hinak0/ClashConfigConverter/config"
 	"github.com/hinak0/ClashConfigConverter/log"
@@ -17,9 +19,11 @@ var (
 	proxiesNames []string
 )
 
-func ParseSubscriptions(subscriptions []config.Subscription) (proxies []map[string]interface{}) {
-
+func ParseProxies(subscriptions []config.Subscription, exclude string, preloadProxies []proto.Proxy) (proxies []proto.Proxy) {
+	reg := regexp.MustCompile(exclude)
 	client := &http.Client{}
+
+	proxies = append(proxies, preloadProxies...)
 
 	for _, subscription := range subscriptions {
 		res, err := getSingleSubscription(client, subscription)
@@ -27,13 +31,31 @@ func ParseSubscriptions(subscriptions []config.Subscription) (proxies []map[stri
 			fmt.Printf("Error pulling %s : %v\n", subscription.URL, err)
 			continue
 		}
-		tmpConfig := proto.RawConfig{}
-		err = yaml.Unmarshal([]byte(res), &tmpConfig)
+		nativeConfig := proto.RawConfig{}
+		err = yaml.Unmarshal([]byte(res), &nativeConfig)
 		if err != nil {
 			log.Warnln("Error when parse subscription:%s", res)
+		} else {
+			log.Infoln("Success pull subscription: %s", subscription.URL)
 		}
-		proxies = append(proxies, tmpConfig.Proxy...)
+		nativePoxies := nativeConfig.Proxy
+		if !subscription.UdpEnable {
+			for _, p := range nativePoxies {
+				p.UdpEnable = false
+			}
+		}
+		proxies = append(proxies, nativePoxies...)
 	}
+
+	for i := 0; i < len(proxies); i++ {
+		// remove exclude
+		if reg.MatchString(proxies[i].Name) {
+			log.Infoln("Proxy %s match exclude, delete it.", proxies[i].Name)
+			proxies = append(proxies[:i], proxies[i+1:]...)
+			i--
+		}
+	}
+
 	proxiesNames = getAllProxyName(proxies)
 	log.Infoln("Parse subscription success: %v", proxiesNames)
 	return proxies
@@ -90,15 +112,15 @@ func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 	return rules
 }
 
-func getAllProxyName(proxies []map[string]interface{}) (proxiesNameList []string) {
+func getAllProxyName(proxies []proto.Proxy) (proxiesNameList []string) {
 	for _, p := range proxies {
-		name := p["name"].(string)
+		name := p.Name
 		proxiesNameList = append(proxiesNameList, name)
 	}
 	return proxiesNameList
 }
 
-func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []map[string]interface{}) (groups []proto.ProxyGroup) {
+func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []proto.Proxy) (groups []proto.ProxyGroup) {
 	// proxiesNames := getAllProxyName(proxies)
 	for _, rowGroup := range rowGroups {
 		for index, proxyName := range rowGroup.Proxies {
@@ -116,7 +138,7 @@ func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []map[string]interfac
 
 func Integrate(c config.AppConfig) {
 
-	proxies := ParseSubscriptions(c.Subscriptions)
+	proxies := ParseProxies(c.Subscriptions, c.Exclude, c.Proxies)
 	proxyGroups := ParseProxyGroup(c.ProxyGroup, proxies)
 	rules := ParseRuleSet(c.RuleSets)
 
@@ -143,8 +165,15 @@ func WriteTarget(path string, content string) {
 	f, _ := os.Create(path)
 	defer f.Close()
 
-	_, err := f.Write([]byte(content))
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	comment := fmt.Sprintf("# Generate by ClashConfigConverter.\n# %s\n", currentTime)
+	_, err := f.WriteString(comment)
 	if err != nil {
-		log.Errorln("Failed to write target.yaml")
+		log.Errorln("Failed to write timestamp into target.yaml:	%v", err)
+	}
+
+	_, err = f.Write([]byte(content))
+	if err != nil {
+		log.Errorln("Failed to write target.yaml:	%v", err)
 	}
 }

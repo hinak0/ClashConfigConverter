@@ -25,7 +25,7 @@ type RawConfig struct {
 	DNS           RawDNS                    `yaml:"dns,omitempty"`
 	Experimental  any                       `yaml:"experimental,omitempty"`
 	Profile       any                       `yaml:"profile,omitempty"`
-	Proxy         []map[string]interface{}  `yaml:"proxies,omitempty"`
+	Proxy         []Proxy                   `yaml:"proxies,omitempty"`
 	ProxyGroup    []ProxyGroup              `yaml:"proxy-groups,omitempty"`
 	Rule          []string                  `yaml:"rules,omitempty"`
 }
@@ -53,4 +53,13 @@ type ProxyGroup struct {
 	Interval  int      `yaml:"interval,omitempty"`
 	Tolerance int      `yaml:"tolerance,omitempty"`
 	Proxies   []string `yaml:"proxies"`
+}
+
+type Proxy struct {
+	Name      string `yaml:"name"`
+	Server    string `yaml:"server"`
+	Port      int    `yaml:"port"`
+	UdpEnable bool   `yaml:"udp"`
+
+	Others map[string]interface{} `yaml:",inline"`
 }

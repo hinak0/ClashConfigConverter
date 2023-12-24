@@ -2,7 +2,7 @@ NAME=ClashConfigConverter
 BINDIR=bin
 VERSION=$(shell git describe --tags --always || echo "unknown version")
 BUILDTIME=$(shell date -u)
-GOBUILD=CGO_ENABLED=0 go build -trimpath -ldflags '-w -s -buildid='
+GOBUILD=CGO_ENABLED=0 go build -trimpath -ldflags '-w -s'
 
 PLATFORM_LIST = \
 	darwin-amd64 \

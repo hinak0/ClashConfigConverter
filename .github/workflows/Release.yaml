@@ -13,9 +13,6 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-      - name: download modules
-        run: go mod tidy
-
       - name: Cache go module
         uses: actions/cache@v3
         with:
@@ -25,6 +22,9 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      - name: Download modules
+        run: go mod tidy
 
       - name: Build
         run: make releases

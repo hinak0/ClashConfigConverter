@@ -8,29 +8,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           check-latest: true
-          go-version: '1.21'
+          go-version: "1.21"
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
-
-      - name: Cache go module
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Download modules
-        run: go mod tidy
-
-      - name: Build
+      - name: Build Release
         run: make releases
 
       - name: Upload Release

@@ -150,7 +150,7 @@ func Integrate(c config.AppConfig) {
 
 	err := yaml.Unmarshal(data, &baseConfig)
 	if err != nil {
-		log.Errorln("Failed to parse base config.")
+		log.Fatalln("Failed to parse base config: %v.", err)
 	}
 
 	baseConfig.Proxy = proxies

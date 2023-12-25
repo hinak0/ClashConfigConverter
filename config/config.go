@@ -40,7 +40,7 @@ func Parse() AppConfig {
 	Appconfig := AppConfig{}
 	err := yaml.Unmarshal(data, &Appconfig)
 	if err != nil {
-		log.Errorln("Failed to parse config.yaml.")
+		log.Fatalln("Failed to parse config.yaml: %v.", err)
 	}
 
 	return Appconfig

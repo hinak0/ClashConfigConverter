@@ -40,8 +40,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		}
 		nativePoxies := nativeConfig.Proxy
 		if !subscription.UdpEnable {
-			for _, p := range nativePoxies {
-				p.UdpEnable = false
+			for i := range nativePoxies {
+				nativePoxies[i].UdpEnable = false
 			}
 		}
 		proxies = append(proxies, nativePoxies...)

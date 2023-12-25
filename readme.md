@@ -12,5 +12,7 @@
 ## Basic Usage
 
 ```bash
-cp config.yaml.example config.yaml.example
+cp config.yaml.example config.yaml
+
+./converter
 ```

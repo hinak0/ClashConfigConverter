@@ -1,10 +1,26 @@
+# clash基本配置路径
 base-file: data/base.yaml
+# 生成文件路径，clash默认配置文件是/home/<user>/.config/clash/config.yaml
 target: target.yaml
+# 订阅链接列表
 sub-links:
   - url: https://example.com/api/subscribe?token=0000000
+    # 默认true,设置为false会将所有节点设置为udp: false
+    udp: false
+    # 某些订阅源只允许特定的ua来拉去订阅
     headers:
       User-Agent: ClashForWindows<v2.50.0>
   - url: https://example.com/
+# 排除关键字，支持正则
+exclude: ^(HK|SG)~
+# 预加载节点，会加入到节点列表
+proxies:
+  - name: node01
+    server: example.com
+    port: 12345
+    type: ss
+    udp: false
+# 规则集
 ruleset:
   - name: ban
     location: data/ban.list
@@ -16,19 +32,17 @@ ruleset:
     value: GEOIP,CN
   - name: pro
     value: MATCH
-proxies:
-  - name: node01
-    server: example.com
-    port: 12345
-    type: ss
-    udp: false
+# 代理组配置
 proxy-groups:
   - name: auto
     type: url-test
     url: https://i.ytimg.com/generate_204
+    # test周期
     interval: 300
+    # 延迟差阈值
     tolerance: 50
     proxies:
+      # *代表所有节点
       - "*"
   - name: pro
     type: select

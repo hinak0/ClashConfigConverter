@@ -17,10 +17,13 @@ import (
 
 var (
 	proxiesNames []string
+	excludeReg   *regexp.Regexp
 )
 
 func ParseProxies(subscriptions []config.Subscription, exclude string, preloadProxies []proto.Proxy) (proxies []proto.Proxy) {
-	reg := regexp.MustCompile(exclude)
+	if exclude != "" {
+		excludeReg = regexp.MustCompile(exclude)
+	}
 	client := &http.Client{}
 
 	proxies = append(proxies, preloadProxies...)
@@ -47,12 +50,14 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		proxies = append(proxies, nativePoxies...)
 	}
 
-	for i := 0; i < len(proxies); i++ {
-		// remove exclude
-		if reg.MatchString(proxies[i].Name) {
-			log.Infoln("Proxy %s match exclude, delete it.", proxies[i].Name)
-			proxies = append(proxies[:i], proxies[i+1:]...)
-			i--
+	if excludeReg != nil {
+		for i := 0; i < len(proxies); i++ {
+			// remove exclude
+			if excludeReg.MatchString(proxies[i].Name) {
+				log.Infoln("Proxy %s match exclude, delete it.", proxies[i].Name)
+				proxies = append(proxies[:i], proxies[i+1:]...)
+				i--
+			}
 		}
 	}
 

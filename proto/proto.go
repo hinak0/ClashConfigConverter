@@ -34,8 +34,8 @@ type RawDNS struct {
 	Enable            bool              `yaml:"enable"`
 	IPv6              *bool             `yaml:"ipv6"`
 	UseHosts          bool              `yaml:"use-hosts"`
-	NameServer        []string          `yaml:"nameserver"`
-	Fallback          []string          `yaml:"fallback,omitempty"`
+	NameServer        []any             `yaml:"nameserver"`
+	Fallback          []any             `yaml:"fallback"`
 	FallbackFilter    any               `yaml:"fallback-filter,omitempty"`
 	Listen            string            `yaml:"listen,omitempty"`
 	EnhancedMode      string            `yaml:"enhanced-mode,omitempty"`

@@ -37,7 +37,7 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		nativeConfig := proto.RawConfig{}
 		err = yaml.Unmarshal([]byte(res), &nativeConfig)
 		if err != nil {
-			log.Warnln("Error when parse subscription:%s", res)
+			log.Warnln("Error when parse subscription:%s", err)
 		} else {
 			log.Infoln("Success pull subscription: %s", subscription.URL)
 		}
@@ -87,7 +87,6 @@ func getSingleSubscription(client *http.Client, sub config.Subscription) (string
 func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 
 	for _, s := range rulesets {
-
 		// not a file ref
 		if s.Value != "" {
 			rules = append(rules, s.Value+","+s.Name)

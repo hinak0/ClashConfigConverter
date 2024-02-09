@@ -22,7 +22,7 @@ type AppConfig struct {
 type Subscription struct {
 	URL       string            `yaml:"url"`
 	Headers   map[string]string `yaml:"headers"`
-	UdpEnable bool              `yaml:"udp"`
+	UdpEnable *bool             `yaml:"udp,omitempty"`
 }
 
 type RuleSet struct {
@@ -41,6 +41,13 @@ func Parse() AppConfig {
 	err := yaml.Unmarshal(data, &Appconfig)
 	if err != nil {
 		log.Fatalln("Failed to parse config.yaml: %v.", err)
+	}
+
+	defaultUdpEnableudpEnable := true
+	for i := range Appconfig.Subscriptions {
+		if Appconfig.Subscriptions[i].UdpEnable == nil {
+			Appconfig.Subscriptions[i].UdpEnable = &defaultUdpEnableudpEnable
+		}
 	}
 
 	return Appconfig

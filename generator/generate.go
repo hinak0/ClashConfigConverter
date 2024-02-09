@@ -42,7 +42,7 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 			log.Infoln("Success pull subscription: %s", subscription.URL)
 		}
 		nativePoxies := nativeConfig.Proxy
-		if !subscription.UdpEnable {
+		if !*subscription.UdpEnable {
 			for i := range nativePoxies {
 				nativePoxies[i].UdpEnable = false
 			}

@@ -28,6 +28,8 @@ type RawConfig struct {
 	Proxy         []Proxy                   `yaml:"proxies,omitempty"`
 	ProxyGroup    []ProxyGroup              `yaml:"proxy-groups,omitempty"`
 	Rule          []string                  `yaml:"rules,omitempty"`
+
+	Others map[string]interface{} `yaml:",inline"`
 }
 
 type RawDNS struct {
@@ -44,15 +46,15 @@ type RawDNS struct {
 	DefaultNameserver []string          `yaml:"default-nameserver,omitempty"`
 	NameServerPolicy  map[string]string `yaml:"nameserver-policy,omitempty"`
 	SearchDomains     []string          `yaml:"search-domains,omitempty"`
+
+	Others map[string]interface{} `yaml:",inline"`
 }
 
 type ProxyGroup struct {
-	Name      string   `yaml:"name"`
-	Type      string   `yaml:"type"`
-	URL       string   `yaml:"url,omitempty"`
-	Interval  int      `yaml:"interval,omitempty"`
-	Tolerance int      `yaml:"tolerance,omitempty"`
-	Proxies   []string `yaml:"proxies"`
+	Name    string                 `yaml:"name"`
+	Type    string                 `yaml:"type"`
+	Proxies []string               `yaml:"proxies"`
+	Others  map[string]interface{} `yaml:",inline"`
 }
 
 type Proxy struct {

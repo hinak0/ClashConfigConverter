@@ -34,7 +34,6 @@ type RawConfig struct {
 
 type RawDNS struct {
 	Enable            bool              `yaml:"enable"`
-	IPv6              *bool             `yaml:"ipv6"`
 	UseHosts          bool              `yaml:"use-hosts"`
 	NameServer        []any             `yaml:"nameserver"`
 	Fallback          []any             `yaml:"fallback"`

@@ -37,7 +37,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		nativeConfig := proto.RawConfig{}
 		err = yaml.Unmarshal([]byte(res), &nativeConfig)
 		if err != nil {
-			log.Warnln("Error when parse subscription:%s", err)
+			log.Warnln("Error when parse subscription: %s", err)
+			log.Warnln("Subscription: %s", res)
 		} else {
 			log.Infoln("Success pull subscription: %s", subscription.URL)
 		}

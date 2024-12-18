@@ -21,19 +21,32 @@ var (
 )
 
 func ParseProxies(subscriptions []config.Subscription, exclude string, preloadProxies []proto.Proxy) (proxies []proto.Proxy) {
+	// 如果有排除条件，编译正则表达式
 	if exclude != "" {
 		excludeReg = regexp.MustCompile(exclude)
 	}
+
 	client := &http.Client{}
 
+	// 将预加载的代理添加到最终的代理列表中
 	proxies = append(proxies, preloadProxies...)
 
+	// 创建一个存储代理名称的集合，避免重名
+	nameSet := make(map[string]struct{})
+	for _, proxy := range proxies {
+		nameSet[proxy.Name] = struct{}{}
+	}
+
+	// 遍历订阅，处理每个订阅的数据
 	for _, subscription := range subscriptions {
+		// 拉取单个订阅内容
 		res, err := getSingleSubscription(client, subscription)
 		if err != nil {
 			fmt.Printf("Error pulling %s : %v\n", subscription.URL, err)
 			continue
 		}
+
+		// 解析订阅内容为配置
 		nativeConfig := proto.RawConfig{}
 		err = yaml.Unmarshal([]byte(res), &nativeConfig)
 		if err != nil {
@@ -42,28 +55,57 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		} else {
 			log.Infoln("Success pull subscription: %s", subscription.URL)
 		}
+
+		// 获取解析后的代理列表
 		nativePoxies := nativeConfig.Proxy
+
+		// 如果 UDP 被禁用，禁用所有的代理的 UDP 功能
 		if !*subscription.UdpEnable {
 			for i := range nativePoxies {
 				nativePoxies[i].UdpEnable = false
 			}
 		}
+
+		// 检查并处理代理的重命名
+		for i := range nativePoxies {
+			originalName := nativePoxies[i].Name
+			newName := originalName
+			count := 1
+
+			// 如果代理名已经存在，则添加 [n] 后缀，直到找到唯一的名字
+			for {
+				if _, exists := nameSet[newName]; exists {
+					newName = fmt.Sprintf("%s[%d]", originalName, count)
+					count++
+				} else {
+					break
+				}
+			}
+
+			// 更新代理名并保存到集合中
+			nativePoxies[i].Name = newName
+			nameSet[newName] = struct{}{}
+		}
+
+		// 将处理后的代理添加到最终代理列表中
 		proxies = append(proxies, nativePoxies...)
 	}
 
+	// 如果有排除规则，按规则移除匹配的代理
 	if excludeReg != nil {
 		for i := 0; i < len(proxies); i++ {
-			// remove exclude
 			if excludeReg.MatchString(proxies[i].Name) {
 				log.Infoln("Proxy %s match exclude, delete it.", proxies[i].Name)
 				proxies = append(proxies[:i], proxies[i+1:]...)
-				i--
+				i-- // 因为删除了一个元素，调整索引
 			}
 		}
 	}
 
-	proxiesNames = getAllProxyName(proxies)
+	// 获取所有代理的名称列表，用于日志输出
+	proxiesNames := getAllProxyName(proxies)
 	log.Infoln("Parse subscription success: %v", proxiesNames)
+
 	return proxies
 }
 

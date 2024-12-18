@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	proxiesNames []string
-	excludeReg   *regexp.Regexp
+	excludeReg *regexp.Regexp
 )
 
 func ParseProxies(subscriptions []config.Subscription, exclude string, preloadProxies []proto.Proxy) (proxies []proto.Proxy) {
@@ -168,7 +167,8 @@ func getAllProxyName(proxies []proto.Proxy) (proxiesNameList []string) {
 }
 
 func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []proto.Proxy) (groups []proto.ProxyGroup) {
-	// proxiesNames := getAllProxyName(proxies)
+	proxiesNames := getAllProxyName(proxies)
+
 	for _, rowGroup := range rowGroups {
 		for index, proxyName := range rowGroup.Proxies {
 			// replase * to all proxies

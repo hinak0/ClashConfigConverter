@@ -48,6 +48,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 				return
 			}
 
+			log.Infoln("Successfully pull subscription: %s", sub.URL)
+
 			currentProxies := nativeConfig.Proxy
 
 			if !*sub.UdpEnable {
@@ -68,6 +70,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 	for currentProxies := range proxyChan {
 		proxies = append(proxies, currentProxies...)
 	}
+
+	log.Infoln("Pull all subscriptions successfully.")
 
 	// 正则匹配排除
 	if excludeReg != nil {
@@ -100,10 +104,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		nameSet[newName] = struct{}{}
 	}
 
-	// todo: 去除emoji
-
 	proxiesNames := getAllProxyName(proxies)
-	log.Infoln("Parse subscription success: %v", proxiesNames)
+	log.Infoln("Parse subscription success: %s", strings.Join(proxiesNames, ","))
 
 	return proxies
 }

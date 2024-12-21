@@ -20,6 +20,7 @@ type AppConfig struct {
 }
 
 type Subscription struct {
+	Name      string            `yaml:"name,omitempty"`
 	URL       string            `yaml:"url"`
 	Headers   map[string]string `yaml:"headers"`
 	UdpEnable *bool             `yaml:"udp,omitempty"`

@@ -7,6 +7,8 @@ sub-links:
   - url: https://example.com/api/subscribe?token=0000000
     # 默认true,设置为false会将所有节点设置为udp: false
     udp: false
+    # 可选，给节点名加前缀
+    name: group01
     # 某些订阅源只允许特定的ua来拉去订阅
     headers:
       User-Agent: ClashForWindows<v2.50.0>

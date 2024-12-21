@@ -35,30 +35,12 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 		wg.Add(1)
 		go func(sub config.Subscription) {
 			defer wg.Done()
-			res, err := getSingleSubscription(client, sub)
+			proxies, err := getSingleSubscription(client, sub)
 			if err != nil {
 				log.Warnln("Error pulling %s: %v", sub.URL, err)
 				return
 			}
-
-			nativeConfig := proto.RawConfig{}
-			err = yaml.Unmarshal([]byte(res), &nativeConfig)
-			if err != nil {
-				log.Warnln("Error when parse subscription %s: %v", sub.URL, err)
-				return
-			}
-
-			log.Infoln("Successfully pull subscription: %s", sub.URL)
-
-			currentProxies := nativeConfig.Proxy
-
-			if !*sub.UdpEnable {
-				for i := range currentProxies {
-					currentProxies[i].UdpEnable = false
-				}
-			}
-
-			proxyChan <- currentProxies
+			proxyChan <- proxies
 		}(subscription)
 	}
 
@@ -110,7 +92,8 @@ func ParseProxies(subscriptions []config.Subscription, exclude string, preloadPr
 	return proxies
 }
 
-func getSingleSubscription(client *http.Client, sub config.Subscription) (string, error) {
+// 拉取单个订阅
+func getSingleSubscription(client *http.Client, sub config.Subscription) ([]proto.Proxy, error) {
 	request, _ := http.NewRequest("GET", sub.URL, nil)
 
 	for key, value := range sub.Headers {
@@ -120,16 +103,51 @@ func getSingleSubscription(client *http.Client, sub config.Subscription) (string
 	res, err := client.Do(request)
 	if err != nil {
 		log.Warnln("Error when pull subscription %s: %v", sub.URL, err)
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
-	body, _ := io.ReadAll(res.Body)
-	return string(body), nil
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Warnln("Error pulling %s: %v", sub.URL, err)
+		return nil, err
+	}
+
+	nativeConfig := proto.RawConfig{}
+	err = yaml.Unmarshal(body, &nativeConfig)
+	if err != nil {
+		log.Warnln("Error when parse subscription %s: %v", sub.URL, err)
+		return nil, err
+	}
+
+	log.Infoln("Successfully pull subscription: %s", sub.URL)
+
+	proxies := nativeConfig.Proxy
+
+	// 设置updEnable
+	if sub.UdpEnable != nil && !*sub.UdpEnable {
+		for i := range proxies {
+			proxies[i].UdpEnable = false
+		}
+	}
+
+	// 去除emoji
+	for i := range proxies {
+		proxies[i].Name = RemoveEmojis(proxies[i].Name)
+	}
+
+	// 设置组名
+	if sub.Name != "" {
+		for i := range proxies {
+			// [name]proxyname
+			proxies[i].Name = fmt.Sprintf("[%s]%s", sub.Name, proxies[i].Name)
+		}
+	}
+
+	return proxies, nil
 }
 
 func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
-
 	for _, s := range rulesets {
 		// not a file ref
 		if s.Value != "" {
@@ -143,7 +161,6 @@ func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 
 		rulelist := strings.Split(string(data), "\n")
 		for _, rule := range rulelist {
-
 			rule = strings.TrimSpace(rule)
 			// blank or comment
 			if rule == "" || strings.HasPrefix(rule, "#") {
@@ -160,20 +177,12 @@ func ParseRuleSet(rulesets []config.RuleSet) (rules []string) {
 	return rules
 }
 
-func getAllProxyName(proxies []proto.Proxy) (proxiesNameList []string) {
-	for _, p := range proxies {
-		name := p.Name
-		proxiesNameList = append(proxiesNameList, name)
-	}
-	return proxiesNameList
-}
-
 func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []proto.Proxy) (groups []proto.ProxyGroup) {
 	proxiesNames := getAllProxyName(proxies)
 
 	for _, rowGroup := range rowGroups {
 		for index, proxyName := range rowGroup.Proxies {
-			// replase * to all proxies
+			// replace * to all proxies
 			if proxyName == "*" {
 				rowGroup.Proxies = append(rowGroup.Proxies[:index], append(proxiesNames, rowGroup.Proxies[index+1:]...)...)
 				break
@@ -186,7 +195,6 @@ func ParseProxyGroup(rowGroups []proto.ProxyGroup, proxies []proto.Proxy) (group
 }
 
 func Integrate(c config.AppConfig) {
-
 	proxies := ParseProxies(c.Subscriptions, c.Exclude, c.Proxies)
 	proxyGroups := ParseProxyGroup(c.ProxyGroup, proxies)
 	rules := ParseRuleSet(c.RuleSets)
